@@ -53,3 +53,13 @@ laravel-route-group
         # 解除禁用
         Route::get(   '/{id}/unban', array('as' => 'user.unban'  , 'uses' => 'UserController@unban'  ))->before('hasAccess:user.ban'    );
     });
+
+> **注意** 需配合“路由权限过滤器”使用
+
+    Route::filter('hasAccess', function ($route, $request, $permission) {
+        if (! user()->hasAccess($permission)) {
+            App::abort(403);
+        }
+    });
+
+上例中的 `user()->hasAccess($permission)` 只是一个例子，作用是“获取当前用户实例，并判断用户是否有给定的操作权限”，需根据实际情况自行调整。
