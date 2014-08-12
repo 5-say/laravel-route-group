@@ -26,9 +26,16 @@ laravel-route-group
         ->normal()
         ->more(function ($as, $uses, $has) {
             # 禁用
-            Route::get('/{id}/ban', array('as' => $as.'ban', 'uses' => $uses.'ban'))->before($has.'ban');
+            Route::get('/{id}/ban'  , array('as' => $as.'ban'  , 'uses' => $uses.'ban'  ))->before($has.'ban');
             # 解除禁用
             Route::get('/{id}/unban', array('as' => $as.'unban', 'uses' => $uses.'unban'))->before($has.'ban');
         });
 
 以上相当于
+
+    Route::group(array('prefix' => 'user'), function () {
+        # 禁用
+        Route::get('/{id}/ban'  , array('as' => 'user.ban'  , 'uses' => 'UserController@ban'  ))->before('hasAccess:user.ban');
+        # 解除禁用
+        Route::get('/{id}/unban', array('as' => 'user.unban', 'uses' => 'UserController@unban'))->before('hasAccess:user.ban');
+    });
