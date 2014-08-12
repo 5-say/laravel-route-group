@@ -34,8 +34,22 @@ laravel-route-group
 以上相当于
 
     Route::group(array('prefix' => 'user'), function () {
+        # 列表页
+        Route::get(   '/'          , array('as' => 'user.index'  , 'uses' => 'UserController@index'  ))->before('hasAccess:user.show'   );
+        # 创建页
+        Route::get(   '/create'    , array('as' => 'user.create' , 'uses' => 'UserController@create' ))->before('hasAccess:user.create' );
+        # 存储
+        Route::post(  '/'          , array('as' => 'user.store'  , 'uses' => 'UserController@store'  ))->before('hasAccess:user.create' );
+        # 详情页
+        Route::get(   '/{id}'      , array('as' => 'user.show'   , 'uses' => 'UserController@show'   ))->before('hasAccess:user.show'   );
+        # 修改页
+        Route::get(   '/{id}/edit' , array('as' => 'user.edit'   , 'uses' => 'UserController@edit'   ))->before('hasAccess:user.edit'   );
+        # 更新
+        Route::put(   '/{id}'      , array('as' => 'user.update' , 'uses' => 'UserController@update' ))->before('hasAccess:user.edit'   );
+        # 删除
+        Route::delete('/'          , array('as' => 'user.destroy', 'uses' => 'UserController@destroy'))->before('hasAccess:user.destroy');
         # 禁用
-        Route::get('/{id}/ban'  , array('as' => 'user.ban'  , 'uses' => 'UserController@ban'  ))->before('hasAccess:user.ban');
+        Route::get(   '/{id}/ban'  , array('as' => 'user.ban'    , 'uses' => 'UserController@ban'    ))->before('hasAccess:user.ban'    );
         # 解除禁用
-        Route::get('/{id}/unban', array('as' => 'user.unban', 'uses' => 'UserController@unban'))->before('hasAccess:user.ban');
+        Route::get(   '/{id}/unban', array('as' => 'user.unban'  , 'uses' => 'UserController@unban'  ))->before('hasAccess:user.ban'    );
     });
