@@ -17,17 +17,21 @@ class LaravelRouteGroup
         'remove',
     );
 
-    private $prefix;
-    private $as;
-    private $uses;
-    private $has;
+    private $prefix = '';
+    private $as     = '';
+    private $uses   = '';
+    private $has    = '';
+
+    private $routeNow    = '';
+    private $routeCaches = array();
+    private $allCaches   = array();
 
     /**
      * 构造分组路由并设置路由前缀
      * @param  string $prefix 路由前缀
      * @return self
      */
-    public function make($prefix)
+    public function make($prefix = '/')
     {
         $this->prefix = rtrim($prefix, '/');
         return $this;
@@ -61,189 +65,304 @@ class LaravelRouteGroup
      * @param  Closure $moreRouteCallback 匿名回调函数
      * @return self
      */
-    public function more(\Closure $moreRouteCallback)
+    public function go(\Closure $moreRouteCallback)
     {
-        $as   = $this->as;
-        $uses = $this->uses;
-        $has  = $this->has;
-        Route::group(array('prefix' => $this->prefix), function () use ($moreRouteCallback, $as, $uses, $has) {
-            call_user_func($moreRouteCallback, $as, $uses, $has);
-        });
-        return $this;
-    }
+        $that = $this;
+        $this->allCaches   = array_merge($this->allCaches, $this->routeCaches);
+        $this->routeCaches = array();
+        call_user_func($moreRouteCallback, $that);
 
-    /**
-     * 仅注册指定路由
-     * @param  dynamic mixed 路由名称
-     * @return self
-     */
-    public function only()
-    {
-        $routeList = func_get_args();
-        foreach ($routeList as $route) {
-            $this->{$route.'Route'}();
+        foreach ($this->routeCaches as $key => $value) {
+            list($method, $uri) = explode('@', $key);
+
+            if (isset($value['as'])) {
+                $route = Route::$method($uri, array(
+                    'as'   => $value['as'],
+                    'uses' => $value['uses'],
+                ));
+            } else {
+                $route = Route::$method($uri, $value['uses']);
+            }
+
+            // 前置过滤器
+            if (isset($value['before']) && ! empty($value['before']))
+                $route->before($value['before']);
         }
+
         return $this;
     }
 
     /**
-     * 仅注册通用路由
-     * @return self
+     * 断点调试，输出当前实例注册的路由
+     * @return void
      */
-    public function normal()
+    public function dd()
     {
-        $routeList = array_diff($this->allRouteList, array('recycle', 'restore', 'remove'));
-        foreach ($routeList as $route) {
-            $this->{$route.'Route'}();
+        $this->echoTable($this->routeCaches);
+        die;
+    }
+
+    /**
+     * 断点调试，输出所有注册的路由
+     * @return void
+     */
+    public function ddAll()
+    {
+        $this->echoTable(array_merge($this->allCaches, $this->routeCaches));
+        die;
+    }
+
+    /**
+     * 输出调试，输出当前实例注册的路由
+     * @return void
+     */
+    public function echoTable($routes)
+    {
+        echo '<style> th, td { background-color: #B8D0EB; padding: 5px; } </style>';
+        echo '<table><tr><th>#</th><th>Method</th><th>URI</th><th>AS</th><th>Uses</th><th>Before</th></tr>';
+        $i = 0;
+        foreach ($routes as $key => $value) {
+            list($method, $uri) = explode('@', $key);
+            echo '<tr>';
+            echo '<td>'.++$i.'</td>';
+            echo '<td>'.$method.'</td>';
+            echo '<td>'.$uri.'</td>';
+            if (isset($value['as'])) {
+                echo '<td>'.$value['as'].'</td>';
+            } else {
+                echo '<td>&nbsp;</td>';
+            }
+            echo '<td>'.$value['uses'].'</td>';
+            if (isset($value['before']) && ! empty($value['before'])) {
+                echo '<td>'.$value['uses'].'</td>';
+            } else {
+                echo '<td>&nbsp;</td>';
+            }
+            echo '</tr>';
         }
+        echo '</table>';
+    }
+
+    /**
+     * GET 路由
+     * @param  string $uri URI 路径
+     * @return self
+     */
+    public function get($uri)
+    {
+        return $this->addroute('get', $uri);
+    }
+
+    /**
+     * POST 路由
+     * @param  string $uri URI 路径
+     * @return self
+     */
+    public function post($uri)
+    {
+        return $this->addroute('post', $uri);
+    }
+
+    /**
+     * PUT 路由
+     * @param  string $uri URI 路径
+     * @return self
+     */
+    public function put($uri)
+    {
+        return $this->addroute('put', $uri);
+    }
+
+    /**
+     * PATCH 路由
+     * @param  string $uri URI 路径
+     * @return self
+     */
+    public function patch($uri)
+    {
+        return $this->addroute('patch', $uri);
+    }
+
+    /**
+     * DELETE 路由
+     * @param  string $uri URI 路径
+     * @return self
+     */
+    public function delete($uri)
+    {
+        return $this->addroute('delete', $uri);
+    }
+
+    /**
+     * ANY 路由
+     * @param  string $uri URI 路径
+     * @return self
+     */
+    public function any($uri)
+    {
+        return $this->addroute('any', $uri);
+    }
+
+    /**
+     * 增加路由
+     * @param  string $method 请求类型
+     * @param  string $uri    URI 路径
+     * @return self
+     */
+    private function addRoute($method, $uri)
+    {
+        $key = $method.'@'.$this->prefix.$uri;
+        $this->routeCaches[$key] = array();
+        $this->routeNow          = $key;
         return $this;
     }
 
     /**
-     * 在注册通用路由时忽略指定项
-     * @param  dynamic mixed 路由名称
-     * @return self
+     * 路由 as 参数
+     * @param string $as
      */
-    public function normalExcept()
+    public function MyAs($as)
     {
-        $routeList = array_diff($this->allRouteList, array('recycle', 'restore', 'remove'), func_get_args());
-        foreach ($routeList as $route) {
-            $this->{$route.'Route'}();
-        }
+        $this->routeCaches[$this->routeNow]['as'] = $this->as.$as;
         return $this;
     }
 
     /**
-     * 仅注册“回收站”“恢复删除项”路由
-     * @return self
+     * 路由 uses 参数
+     * @param string $uses
      */
-    public function recycle()
+    public function uses($uses)
     {
-        $this->recycleRoute();
-        $this->restoreRoute();
+        $this->routeCaches[$this->routeNow]['uses'] = $this->uses.$uses;
         return $this;
     }
 
     /**
-     * 仅注册“彻底删除”路由
-     * @return self
+     * 路由 has 参数
+     * @param string $has
      */
-    public function remove()
+    public function has($has)
     {
-        $this->removeRoute();
+        if (isset($this->routeCaches[$this->routeNow]['before']) && ! empty($this->routeCaches[$this->routeNow]['before']))
+            $this->routeCaches[$this->routeNow]['before'] .= '|'.$this->has.$has;
+        else
+            $this->routeCaches[$this->routeNow]['before'] = $this->has.$has;
         return $this;
     }
 
     /**
-     * 注册所有本类中已定义的路由
-     * @return self
+     * 路由 before 参数
+     * @param string $before
      */
-    public function all()
+    public function before($before)
     {
-        foreach ($this->allRouteList as $route) {
-            $this->{$route.'Route'}();
-        }
+        if (isset($this->routeCaches[$this->routeNow]['before']) && ! empty($this->routeCaches[$this->routeNow]['before']))
+            $this->routeCaches[$this->routeNow]['before'] .= '|'.$before;
+        else
+            $this->routeCaches[$this->routeNow]['before'] = $before;
         return $this;
+    }
+
+    /**
+     * 未定义方法处理
+     * @param  string $name      请求的方法名称
+     * @param  array  $arguments 传入的参数
+     * @return mixed
+     */
+    public function __call($name, $arguments) 
+    {
+        if ($name === 'as')  // 绕过关键字冲突
+            return $this->MyAs($arguments[0]);
     }
 
     /**
      * 路由：列表（页面）
-     * @return void
+     * @return self
      */
-    private function indexRoute()
+    public function index()
     {
-        Route::get($this->prefix.'/', array('as' => $this->as.'index', 'uses' => $this->uses.'index'))
-            ->before($this->has.'show');
+        return $this->addroute('get', '/')->as('index')->uses('index');
     }
 
     /**
      * 路由：创建（页面）
-     * @return void
+     * @return self
      */
-    private function createRoute()
+    public function create()
     {
-        Route::get($this->prefix.'/create', array('as' => $this->as.'create', 'uses' => $this->uses.'create'))
-            ->before($this->has.'create');
+        return $this->addroute('get', '/create')->as('create')->uses('create');
     }
 
     /**
      * 路由：存储
-     * @return void
+     * @return self
      */
-    private function storeRoute()
+    public function store()
     {
-        Route::post($this->prefix.'/', array('as' => $this->as.'store', 'uses' => $this->uses.'store'))
-            ->before($this->has.'create');
+        return $this->addroute('post', '/')->as('store')->uses('store');
     }
 
     /**
      * 路由：查看详细（页面）
-     * @return void
+     * @return self
      */
-    private function showRoute()
+    public function show()
     {
-        Route::get($this->prefix.'/{id}', array('as' => $this->as.'show', 'uses' => $this->uses.'show'))
-            ->before($this->has.'show');
+        return $this->addroute('get', '/{id}')->as('show')->uses('show');
     }
 
     /**
      * 路由：修改（页面）
-     * @return void
+     * @return self
      */
-    private function editRoute()
+    public function edit()
     {
-        Route::get($this->prefix.'/{id}/edit', array('as' => $this->as.'edit', 'uses' => $this->uses.'edit'))
-            ->before($this->has.'edit');
+        return $this->addroute('get', '/{id}/edit')->as('edit')->uses('edit');
     }
 
     /**
      * 路由：更新
-     * @return void
+     * @return self
      */
-    private function updateRoute()
+    public function update()
     {
-        Route::put($this->prefix.'/{id}', array('as' => $this->as.'update', 'uses' => $this->uses.'update'))
-            ->before($this->has.'edit');
+        return $this->addroute('put', '/{id}')->as('update')->uses('update');
     }
 
     /**
      * 路由：删除
-     * @return void
+     * @return self
      */
-    private function destroyRoute()
+    public function destroy()
     {
-        Route::delete($this->prefix.'/', array('as' => $this->as.'destroy', 'uses' => $this->uses.'destroy'))
-            ->before($this->has.'destroy');
+        return $this->addroute('delete', '/')->as('destroy')->uses('destroy');
     }
 
     /**
      * 路由：回收站（页面）
-     * @return void
+     * @return self
      */
-    private function recycleRoute()
+    public function recycle()
     {
-        Route::get($this->prefix.'/recycle', array('as' => $this->as.'recycle', 'uses' => $this->uses.'recycle'))
-            ->before($this->has.'recycle');
+        return $this->addroute('get', '/recycle')->as('recycle')->uses('recycle');
     }
 
     /**
      * 路由：恢复
-     * @return void
+     * @return self
      */
-    private function restoreRoute()
+    public function restore()
     {
-        Route::put($this->prefix.'/restore', array('as' => $this->as.'restore', 'uses' => $this->uses.'restore'))
-            ->before($this->has.'recycle');
+        return $this->addroute('put', '/restore')->as('restore')->uses('restore');
     }
 
     /**
      * 路由：彻底删除
-     * @return void
+     * @return self
      */
-    private function removeRoute()
+    public function remove()
     {
-        Route::delete($this->prefix.'/recycle', array('as' => $this->as.'remove', 'uses' => $this->uses.'remove'))
-            ->before($this->has.'recycle');
+        return $this->addroute('delete', '/recycle')->as('remove')->uses('remove');
     }
 
 
