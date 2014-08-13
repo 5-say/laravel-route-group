@@ -22,36 +22,26 @@ laravel-route-group
 
 ## 使用方法
 
-    RouteGroup::make('user')->asPrefix('user')->controller('UserController')->go(function ($route) {
+### 初级
+
+    RouteGroup::make()->controller('UserController')->go(function ($route) {
+        $route->get('/')->uses('index');
+    });
+
+> 想知道它为我们注册了什么路由？我们来加一个小尾巴 `->dd()` 就像下面这样：
+
+    RouteGroup::make()->controller('UserController')->go(function ($route) {
+        $route->get('/')->uses('index');
+    })->dd();
+
+> 虽然对象化了，但总觉的代码量反而更多了是不是？没关系，让我们来个霸气点的：
+
+    RouteGroup::make()->controller('UserController')->go(function ($route) {
         $route->index()->create()->store()->show()->edit()->update()->destroy();
-        # 禁用
-        $route->get('/{id}/ban'  )->as('ban'  )->uses('ban'  )->before('auth')->has('ban');
-        # 解除禁用
-        $route->get('/{id}/unban')->as('unban')->uses('unban')->before('auth')->has('ban');
-    });
+    })->dd();
 
-以上相当于
+> 现在有点感觉了？
 
-    Route::group(array('prefix' => 'user'), function () {
-        # 列表页
-        Route::get(   '/'          , array('as' => 'user.index'  , 'uses' => 'UserController@index'  ));
-        # 创建页
-        Route::get(   '/create'    , array('as' => 'user.create' , 'uses' => 'UserController@create' ))->before('auth|admin');
-        # 存储
-        Route::post(  '/'          , array('as' => 'user.store'  , 'uses' => 'UserController@store'  ))->before('auth|admin');
-        # 详情页
-        Route::get(   '/{id}'      , array('as' => 'user.show'   , 'uses' => 'UserController@show'   ))->before('auth|admin');
-        # 修改页
-        Route::get(   '/{id}/edit' , array('as' => 'user.edit'   , 'uses' => 'UserController@edit'   ))->before('auth|admin');
-        # 更新
-        Route::put(   '/{id}'      , array('as' => 'user.update' , 'uses' => 'UserController@update' ))->before('auth|admin');
-        # 删除
-        Route::delete('/'          , array('as' => 'user.destroy', 'uses' => 'UserController@destroy'))->before('auth|admin');
-        # 禁用
-        Route::get(   '/{id}/ban'  , array('as' => 'user.ban'    , 'uses' => 'UserController@ban'    ))->before('auth|admin');
-        # 解除禁用
-        Route::get(   '/{id}/unban', array('as' => 'user.unban'  , 'uses' => 'UserController@unban'  ))->before('auth|admin');
-    });
 
 > **注意** `has()` 需配合“路由权限过滤器”使用
 
