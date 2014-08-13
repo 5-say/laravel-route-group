@@ -22,8 +22,6 @@ laravel-route-group
 
 ## 使用方法
 
-### 初级
-
     RouteGroup::make()->controller('UserController')->go(function ($route) {
         $route->get('/')->uses('index');
     });
@@ -63,7 +61,7 @@ laravel-route-group
 
 ![Alt text](/public/image/1.jpg "Optional title")
 
-> **注意** `has()` 需配合“路由权限过滤器”使用
+> **注意** `has()` 需配合“路由权限过滤器”使用：
 
     Route::filter('hasAccess', function ($route, $request, $permission) {
         if (! user()->hasAccess($permission)) {
@@ -72,3 +70,10 @@ laravel-route-group
     });
 
 上例中的 `user()->hasAccess($permission)` 只是一个例子，作用是“获取当前用户实例，并判断用户是否有给定的操作权限”，需根据实际情况自行调整。
+
+> 哦，对了，这里还有个大尾巴 `->ddAll()` 它将输出在此之前，由此辅助注册的所有路由信息：
+
+    RouteGroup::make('user')->asPrefix('user')->controller('UserController')
+        ->go(function ($route) {
+            ...
+        })->ddAll();
