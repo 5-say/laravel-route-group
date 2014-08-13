@@ -59,6 +59,10 @@ laravel-route-group
             $route->get('/{id}/unban')->as('unban')->uses('unban')->before('auth')->has('ban');
         })->dd();
 
+> 看看我们都完成了哪些路由的注册：
+
+![Alt text](/public/image/1.jpg "Optional title")
+
 > **注意** `has()` 需配合“路由权限过滤器”使用
 
     Route::filter('hasAccess', function ($route, $request, $permission) {
