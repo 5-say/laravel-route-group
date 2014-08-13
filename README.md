@@ -36,11 +36,12 @@ laravel-route-group
 
 > 虽然对象化了，但总觉的代码量反而更多了是不是？没关系，让我们来个霸气点的：
 
-    RouteGroup::make()->controller('UserController')->go(function ($route) {
+    RouteGroup::make('user')->asPrefix('user')->controller('UserController')
+    ->go(function ($route) {
         $route->index()->create()->store()->show()->edit()->update()->destroy();
     })->dd();
 
-> 现在有点感觉了？
+> 现在有点感觉了？噢不，官方貌似也提供了一个方法 `Route::resource('user', 'UserController');`！完败？不，这里可以做到更多：
 
 
 > **注意** `has()` 需配合“路由权限过滤器”使用
