@@ -48,8 +48,8 @@ laravel-route-group
                 ->create( )->before('allowCreate')
                 ->store(  )->before('allowCreate')
                 ->show(   )
-                ->edit(   )->before('allowEdit')
-                ->update( )->before('allowEdit')
+                ->edit(   )->before('allowEdit'  )
+                ->update( )->before('allowEdit'  )
                 ->destroy()->before('allowDelete');
             # 禁用
             $route->get('/{id}/ban'  )->as('ban'  )->uses('ban'  )->before('auth')->has('ban');
