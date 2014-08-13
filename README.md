@@ -22,39 +22,38 @@ laravel-route-group
 
 ## 使用方法
 
-    RouteGroup::make('user')->asPrefix('user')->controller('UserController')
-        ->normal()
-        ->more(function ($as, $uses, $has) {
-            # 禁用
-            Route::get('/{id}/ban'  , array('as' => $as.'ban'  , 'uses' => $uses.'ban'  ))->before($has.'ban');
-            # 解除禁用
-            Route::get('/{id}/unban', array('as' => $as.'unban', 'uses' => $uses.'unban'))->before($has.'ban');
-        });
+    RouteGroup::make('user')->asPrefix('user')->controller('UserController')->go(function ($route) {
+        $route->index()->create()->store()->show()->edit()->update()->destroy();
+        # 禁用
+        $route->get('/{id}/ban'  )->as('ban'  )->uses('ban'  )->before('auth')->has('ban');
+        # 解除禁用
+        $route->get('/{id}/unban')->as('unban')->uses('unban')->before('auth')->has('ban');
+    });
 
 以上相当于
 
     Route::group(array('prefix' => 'user'), function () {
         # 列表页
-        Route::get(   '/'          , array('as' => 'user.index'  , 'uses' => 'UserController@index'  ))->before('hasAccess:user.show'   );
+        Route::get(   '/'          , array('as' => 'user.index'  , 'uses' => 'UserController@index'  ));
         # 创建页
-        Route::get(   '/create'    , array('as' => 'user.create' , 'uses' => 'UserController@create' ))->before('hasAccess:user.create' );
+        Route::get(   '/create'    , array('as' => 'user.create' , 'uses' => 'UserController@create' ))->before('auth|admin');
         # 存储
-        Route::post(  '/'          , array('as' => 'user.store'  , 'uses' => 'UserController@store'  ))->before('hasAccess:user.create' );
+        Route::post(  '/'          , array('as' => 'user.store'  , 'uses' => 'UserController@store'  ))->before('auth|admin');
         # 详情页
-        Route::get(   '/{id}'      , array('as' => 'user.show'   , 'uses' => 'UserController@show'   ))->before('hasAccess:user.show'   );
+        Route::get(   '/{id}'      , array('as' => 'user.show'   , 'uses' => 'UserController@show'   ))->before('auth|admin');
         # 修改页
-        Route::get(   '/{id}/edit' , array('as' => 'user.edit'   , 'uses' => 'UserController@edit'   ))->before('hasAccess:user.edit'   );
+        Route::get(   '/{id}/edit' , array('as' => 'user.edit'   , 'uses' => 'UserController@edit'   ))->before('auth|admin');
         # 更新
-        Route::put(   '/{id}'      , array('as' => 'user.update' , 'uses' => 'UserController@update' ))->before('hasAccess:user.edit'   );
+        Route::put(   '/{id}'      , array('as' => 'user.update' , 'uses' => 'UserController@update' ))->before('auth|admin');
         # 删除
-        Route::delete('/'          , array('as' => 'user.destroy', 'uses' => 'UserController@destroy'))->before('hasAccess:user.destroy');
+        Route::delete('/'          , array('as' => 'user.destroy', 'uses' => 'UserController@destroy'))->before('auth|admin');
         # 禁用
-        Route::get(   '/{id}/ban'  , array('as' => 'user.ban'    , 'uses' => 'UserController@ban'    ))->before('hasAccess:user.ban'    );
+        Route::get(   '/{id}/ban'  , array('as' => 'user.ban'    , 'uses' => 'UserController@ban'    ))->before('auth|admin');
         # 解除禁用
-        Route::get(   '/{id}/unban', array('as' => 'user.unban'  , 'uses' => 'UserController@unban'  ))->before('hasAccess:user.ban'    );
+        Route::get(   '/{id}/unban', array('as' => 'user.unban'  , 'uses' => 'UserController@unban'  ))->before('auth|admin');
     });
 
-> **注意** 需配合“路由权限过滤器”使用
+> **注意** `has()` 需配合“路由权限过滤器”使用
 
     Route::filter('hasAccess', function ($route, $request, $permission) {
         if (! user()->hasAccess($permission)) {
