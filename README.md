@@ -43,6 +43,21 @@ laravel-route-group
 
 > 现在有点感觉了？噢不，官方貌似也提供了一个方法 `Route::resource('user', 'UserController');`！完败？不，这里可以做到更多：
 
+RouteGroup::make('user')->asPrefix('user')->controller('UserController')
+    ->go(function ($route) {
+        $route
+            ->index(  )
+            ->create( )->before('allowCreate')
+            ->store(  )->before('allowCreate')
+            ->show(   )
+            ->edit(   )->before('allowEdit')
+            ->update( )->before('allowEdit')
+            ->destroy()->before('allowDelete');
+        # 禁用
+        $route->get('/{id}/ban'  )->as('ban'  )->uses('ban'  )->before('auth')->has('ban');
+        # 解除禁用
+        $route->get('/{id}/unban')->as('unban')->uses('unban')->before('auth')->has('ban');
+    })->dd();
 
 > **注意** `has()` 需配合“路由权限过滤器”使用
 
