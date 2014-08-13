@@ -134,7 +134,7 @@ class LaravelRouteGroup
             }
             echo '<td>'.$value['uses'].'</td>';
             if (isset($value['before']) && ! empty($value['before'])) {
-                echo '<td>'.$value['uses'].'</td>';
+                echo '<td>'.$value['before'].'</td>';
             } else {
                 echo '<td>&nbsp;</td>';
             }
