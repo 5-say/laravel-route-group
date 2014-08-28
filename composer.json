@@ -1,6 +1,6 @@
 {
     "name": "five-say/laravel-route-group",
-    "description": "",
+    "description": "$route->get(...)->as(...)->uses(...)->before(...);",
     "authors": [
         {
             "name": "FiveSay",
