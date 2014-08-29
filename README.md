@@ -40,7 +40,7 @@ RouteGroup::make()->controller('AdminController')->go(function ($route) {
 })->dd();
 ```
 
-![](/public/image/1.jpg)
+![](/public/image/1.png)
 
 > 虽然对象化了，但总觉的代码量反而更多了是不是？没关系，让我们来个霸气点的：
 
@@ -56,7 +56,7 @@ RouteGroup::make('admin')->as('admin')->before('auth')
     })->dd();
 ```
 
-![](/public/image/2.jpg)
+![](/public/image/2.png)
 
 > 现在有点感觉了？我们还可以做到更多：
 
@@ -72,6 +72,6 @@ RouteGroup::make('admin')->as('admin')->before('auth')
     })->dd();
 ```
 
-![](/public/image/3.jpg)
+![](/public/image/3.png)
 
 > 哦，对了，这里还有个大尾巴 `->ddAll()` 它将输出在此之前，由此辅助注册的所有路由信息。
