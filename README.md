@@ -3,6 +3,13 @@ laravel-route-group
 
 对象化分组路由辅助工具
 
+---
+
+- [使用前的准备](#1)
+- [使用方法](#2)
+- [实际用例](#3)
+
+<a name="1"></a>
 ## 使用前的准备
 
 在 composer.json 文件中申明依赖：
@@ -24,6 +31,7 @@ laravel-route-group
 ),
 ```
 
+<a name="2"></a>
 ## 使用方法
 
 ```php
@@ -76,6 +84,7 @@ RouteGroup::make('admin')->as('admin')->before('auth')
 
 > 哦，对了，这里还有个大尾巴 `->ddAll()` 它将输出在此之前，由此辅助注册的所有路由信息。
 
+<a name="3"></a>
 ## 实际用例
 
 请参考此项目 [5-say/laravel-4.1-simple-blog](https://github.com/5-say/laravel-4.1-simple-blog/blob/master/app/routes.php)。
