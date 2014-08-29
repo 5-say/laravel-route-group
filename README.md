@@ -75,3 +75,7 @@ RouteGroup::make('admin')->as('admin')->before('auth')
 ![](/public/image/3.png)
 
 > 哦，对了，这里还有个大尾巴 `->ddAll()` 它将输出在此之前，由此辅助注册的所有路由信息。
+
+## 实际用例
+
+请参考此项目 [5-say/laravel-4.1-simple-blog](https://github.com/5-say/laravel-4.1-simple-blog/blob/master/app/routes.php)。
