@@ -2,6 +2,7 @@ laravel-route-group
 ===================
 
 对象化分组路由辅助工具
+2.* 系列的版本将单独使用一个分支，为 laravel 4.2 做出支持
 
 ---
 
@@ -15,7 +16,7 @@ laravel-route-group
 在 composer.json 文件中申明依赖：
 
 ```json
-"five-say/laravel-route-group": "1.*"
+"five-say/laravel-route-group": "2.*"
 ```
 
 在 `/app/config/app.php` 中设置“服务提供者”与“别名”
