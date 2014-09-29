@@ -1,6 +1,7 @@
 {
     "name": "five-say/laravel-route-group",
-    "description": "$route->get(...)->as(...)->uses(...)->before(...);",
+    "description": "Object-oriented route group.use like this: $route->get(...)->as(...)->uses(...)->before(...);",
+    "keywords": ["laravel", "route", "group", "object"],
     "authors": [
         {
             "name": "FiveSay",
